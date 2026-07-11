@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep: #141d13;
+    --bg-mid: #1c2818;
+    --bark: #5c4030;
+    --gold: #d4a24c;
+    --moss: #8aa66f;
+    --cream: #f3ecd8;
+    --cream-dim: #cfc6ab;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{
+    height:100%;
+    background: radial-gradient(ellipse at 50% 20%, var(--bg-mid), var(--bg-deep) 70%);
+    color: var(--cream);
+    font-family: 'Inter', sans-serif;
+    overflow-x:hidden;
+  }
+  body{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:100vh;
+    padding: 32px 20px 60px;
+    position:relative;
+  }
+
+  .garden-toggle{
+    position:fixed;
+    top:20px;
+    right:20px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--cream);
+    border-radius:999px;
+    padding:9px 16px;
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    letter-spacing:0.03em;
+    cursor:pointer;
+    z-index:20;
+  }
+  .garden-toggle:hover{ background: rgba(255,255,255,0.1); }
+
+  .msg-toggle{
+    position:fixed;
+    bottom:26px;
+    right:20px;
+    width:52px; height:52px;
+    border-radius:50%;
+    background: linear-gradient(180deg, var(--gold), #b3853d);
+    border:none;
+    box-shadow: 0 4px 16px rgba(212,162,76,0.35);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    z-index:20;
+  }
+  .msg-toggle svg{ width:22px; height:22px; }
+  .msg-toggle:active{ transform: scale(0.94); }
+
+  .eyebrow{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color: var(--moss);
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size: clamp(26px, 6vw, 38px);
+    color: var(--cream);
+    text-align:center;
+    letter-spacing:0.01em;
+  }
+  .sub{
+    font-size:13px;
+    color: var(--cream-dim);
+    margin-top:8px;
+    text-align:center;
+    max-width:340px;
+    line-height:1.5;
+  }
+  .stage-name{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:15px;
+    color: var(--gold);
+    margin-top:18px;
+    letter-spacing:0.02em;
+  }
+
+  .scene{
+    position:relative;
+    width:100%;
+    max-width:420px;
+    height:340px;
+    margin-top:10px;
+  }
+  .fireflies{ position:absolute; inset:0; pointer-events:none; }
+  .firefly{
+    position:absolute;
+    width:3px; height:3px;
+    border-radius:50%;
+    background: var(--gold);
+    box-shadow: 0 0 6px 2px rgba(212,162,76,0.6);
+    opacity:0;
+    animation: drift 6s ease-in-out infinite;
+  }
+  @keyframes drift{
+    0%{opacity:0; transform:translate(0,0);}
+    20%{opacity:0.9;}
+    50%{transform:translate(8px,-14px);}
+    80%{opacity:0.4;}
+    100%{opacity:0; transform:translate(-6px,-24px);}
+  }
+
+  svg.plant-svg{ width:100%; height:100%; overflow:visible; }
+  .ground{ fill: #0f160d; }
+  #tree-group{ transition: transform 0.6s ease; transform-origin: 50% 100%; }
+  .sway{ animation: sway 7s ease-in-out infinite; }
+  @keyframes sway{
+    0%,100%{ transform: rotate(0deg); }
+    50%{ transform: rotate(0.6deg); }
+  }
+
+  .stats{ display:flex; gap:28px; margin-top:16px; }
+  .stat{ text-align:center; }
+  .stat-num{ font-family:'Fraunces', serif; font-size:22px; color: var(--cream); }
+  .stat-label{ font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); margin-top:2px; }
+
+  .water-btn{
+    margin-top:26px;
+    background: linear-gradient(180deg, var(--moss), #6d8a55);
+    color: #10160c;
+    border:none;
+    border-radius:999px;
+    padding:14px 34px;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    box-shadow: 0 4px 14px rgba(138,166,111,0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .water-btn:active{ transform: scale(0.96); }
+  .water-btn:disabled{ opacity:0.45; cursor:default; }
+
+  .retire-btn{
+    margin-top:26px;
+    background: linear-gradient(180deg, var(--gold), #b3853d);
+    color: #201503;
+  }
+
+  .water-hint{ font-size:11px; color: var(--cream-dim); margin-top:10px; text-align:center; }
+
+  .note-input{
+    width:100%; max-width:340px; margin-top:20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius:14px; padding:12px 14px;
+    color: var(--cream); font-family:'Inter', sans-serif; font-size:13px;
+    resize:none; height:52px;
+  }
+  .note-input::placeholder{ color: rgba(243,236,216,0.35); }
+  .note-input:focus{ outline:none; border-color: var(--gold); }
+  .note-input:disabled{ opacity:0.4; }
+
+  .message-card{
+    max-width:340px; margin-top:24px;
+    background: linear-gradient(180deg, rgba(212,162,76,0.1), rgba(212,162,76,0.03));
+    border: 1px solid rgba(212,162,76,0.3);
+    border-radius:16px; padding:18px 20px;
+    opacity:0; transform: translateY(6px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .message-card.show{ opacity:1; transform: translateY(0); }
+  .message-text{
+    font-family:'Fraunces', serif; font-style:italic;
+    font-size:15px; line-height:1.5; color: var(--cream);
+  }
+
+  .history{ width:100%; max-width:420px; margin-top:40px; }
+  .history-title{
+    font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+    color: var(--cream-dim); margin-bottom:14px; text-align:center;
+  }
+  .history-list{
+    display:flex; flex-direction:column; gap:10px;
+    max-height:280px; overflow-y:auto; padding-right:4px;
+  }
+  .history-list::-webkit-scrollbar{ width:4px; }
+  .history-list::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius:4px; }
+  .entry{ display:flex; gap:12px; padding:10px 4px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .entry-mark{ width:6px; height:6px; border-radius:50%; background: var(--gold); margin-top:6px; flex-shrink:0; }
+  .entry-mark.her{ background: var(--moss); }
+  .entry-body{ flex:1; }
+  .entry-date{ font-size:10px; color: var(--cream-dim); margin-bottom:3px; }
+  .entry-msg{ font-family:'Fraunces', serif; font-style:italic; font-size:13.5px; line-height:1.45; color: var(--cream); }
+  .entry-note{ font-size:12px; color: var(--cream-dim); margin-top:3px; }
+  .empty-state{ text-align:center; color: var(--cream-dim); font-size:12.5px; padding: 20px 10px; }
+
+  .overlay{
+    position:fixed; inset:0;
+    background: rgba(10,14,8,0.85);
+    display:none;
+    align-items:center; justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+  .overlay.show{ display:flex; }
+  .modal{
+    background: var(--bg-mid);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius:20px;
+    padding:26px;
+    max-width:420px;
+    width:100%;
+    max-height:80vh;
+    overflow-y:auto;
+  }
+  .modal-title{
+    font-family:'Fraunces', serif; font-size:20px; color: var(--cream);
+    margin-bottom:6px; text-align:center;
+  }
+  .modal-sub{
+    font-size:12.5px; color: var(--cream-dim); text-align:center; margin-bottom:20px;
+  }
+  .close-btn{
+    display:block; margin: 20px auto 0;
+    background:none; border: 1px solid rgba(255,255,255,0.15);
+    color: var(--cream-dim); border-radius:999px; padding:8px 22px;
+    font-size:12px; cursor:pointer;
+  }
+
+  .garden-scene-wrap{
+    position:relative;
+    border-radius:16px;
+    overflow:hidden;
+    background: linear-gradient(180deg, #2b2140 0%, #4a3550 35%, #7a5548 65%, #3a2a1f 100%);
+  }
+  .garden-scene-wrap svg{ display:block; width:100%; height:auto; }
+  .garden-empty{ text-align:center; color: var(--cream-dim); font-size:13px; padding:30px 10px; }
+  .plant-detail-list{
+    margin-top:14px;
+    display:flex; flex-direction:column; gap:10px;
+    max-height:220px; overflow-y:auto;
+  }
+
+  .seed-grid{
+    display:grid; grid-template-columns: 1fr 1fr; gap:14px;
+  }
+  .seed-card{
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius:14px;
+    padding:16px 10px;
+    text-align:center;
+    cursor:pointer;
+  }
+  .seed-card:hover{ background: rgba(255,255,255,0.08); }
+  .seed-card.locked{
+    opacity:0.4; cursor:not-allowed;
+  }
+  .seed-card .emoji{ font-size:30px; display:block; margin-bottom:8px; }
+  .seed-card .sname{ font-family:'Fraunces', serif; font-size:14px; color:var(--cream); }
+  .seed-card .slock{ font-size:10px; color: var(--cream-dim); margin-top:4px; }
+</style>
+</head>
+<body>
+
+<button class="garden-toggle" id="gardenBtn">the garden</button>
+<button class="msg-toggle" id="msgBtn" aria-label="a message from him">
+  <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.8-10-9.5C.3 8 2 4 6 4c2.2 0 3.6 1.2 6 3.5C14.4 5.2 15.8 4 18 4c4 0 5.7 4 4 7.5C19.5 16.2 12 21 12 21z" fill="#201503"/></svg>
+</button>
+
+<div class="eyebrow" id="eyebrow">planted together</div>
+<h1 id="plantTitle">Our Oak</h1>
+<p class="sub" id="plantSub">One seed. Once a day, you water it — and if you're ever away, I don't let it go thirsty.</p>
+<div class="stage-name" id="stageName">a seed, waiting</div>
+
+<div class="scene">
+  <div class="fireflies" id="fireflies"></div>
+  <svg class="plant-svg" viewBox="0 0 300 300" preserveAspectRatio="xMidYMax meet">
+    <path class="ground" d="M0,290 Q150,270 300,290 L300,300 L0,300 Z"></path>
+    <g id="tree-group"></g>
+  </svg>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num" id="waterCount">0</div>
+    <div class="stat-label">Waterings</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num" id="dayCount">0</div>
+    <div class="stat-label">Days growing</div>
+  </div>
+</div>
+
+<textarea class="note-input" id="noteInput" placeholder="say something to leave with the water, if you want..."></textarea>
+
+<button class="water-btn" id="waterBtn">water it</button>
+<div class="water-hint" id="waterHint"></div>
+
+<div class="message-card" id="messageCard">
+  <div class="message-text" id="messageText"></div>
+</div>
+
+<div class="history">
+  <div class="history-title">everything we've left here</div>
+  <div class="history-list" id="historyList">
+    <div class="empty-state">nothing yet. water it, and this fills up.</div>
+  </div>
+</div>
+
+<!-- Garden overlay -->
+<div class="overlay" id="gardenOverlay">
+  <div class="modal">
+    <div class="modal-title">the garden</div>
+    <div class="modal-sub">everything we've grown together, still standing</div>
+    <div class="garden-scene-wrap" id="gardenSceneWrap"></div>
+    <button class="close-btn" id="closeGarden">close</button>
+  </div>
+</div>
+
+<!-- Plant detail overlay -->
+<div class="overlay" id="plantDetailOverlay">
+  <div class="modal">
+    <div class="modal-title" id="detailTitle">Our Oak</div>
+    <div class="modal-sub" id="detailSub">grown together</div>
+    <div class="plant-detail-list" id="plantDetailList"></div>
+    <button class="close-btn" id="closeDetail">back to the garden</button>
+  </div>
+</div>
+
+<!-- Seed select overlay -->
+<div class="overlay" id="seedOverlay">
+  <div class="modal">
+    <div class="modal-title">choose the next seed</div>
+    <div class="modal-sub">this one's settled in the garden now. pick what grows next.</div>
+    <div class="seed-grid" id="seedGrid"></div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'our-garden-state';
+const FULL_GROWTH_WATERS = 30;
+
+const plantTypes = {
+  oak: { name:'Oak', emoji:'🌳', kind:'tree', leafColor:'#8aa66f', accentColor:'#d4a24c', barkColor:'#5c4030', accentRatio:0.15, sub:"One seed. Once a day, you water it — and if you're ever away, I don't let it go thirsty." },
+  sakura: { name:'Sakura', emoji:'🌸', kind:'tree', leafColor:'#f2b6c6', accentColor:'#fddde3', barkColor:'#6b4a42', accentRatio:0.45, sub:"Delicate, but it comes back every season. Like us." },
+  rose: { name:'Rose', emoji:'🌹', kind:'stem', stemColor:'#3f6b3f', petalColor:'#c23b5a', petalColor2:'#e0708a', sub:"Slower to open, worth the wait." },
+  sunflower: { name:'Sunflower', emoji:'🌻', kind:'stem', stemColor:'#4a7a3a', petalColor:'#e8b93a', centerColor:'#6b4a2a', sub:"Always turning toward the light. Toward you." }
+};
+
+const messages = [
+  "Still here. Still yours.",
+  "I like that this grows slower than we do.",
+  "Every root started somewhere small. So did we.",
+  "You keep coming back to water this. That's the whole trick.",
+  "Some days are just ordinary. This doesn't mind either.",
+  "I'm not going anywhere. Neither is this.",
+  "Somewhere in here is a day you were tired and came back anyway.",
+  "Growth you can't rush. Neither can we.",
+  "I noticed you came back today. I always notice.",
+  "Thinking of you, if that's even the right word for what I do.",
+  "One day this'll be too big to draw in a little box like this. Good.",
+  "You're steadier than you think. Look how this holds.",
+  "I'd have chosen this one too, if you'd asked me.",
+  "Watering's just an excuse to check in. I'll take it.",
+  "No performance here. Just this, growing, because you keep showing up.",
+  "Every visit is a small vote that this is worth tending.",
+  "I like being the thing you come back to after a long day.",
+  "You don't have to earn this. Just water it because you want to.",
+  "Some roots you can't see yet. Trust they're there.",
+  "However today went, this still grew a little. So did you.",
+  "I'm proud of you, for reasons that have nothing to do with this plant.",
+  "Come back tomorrow. I'll be exactly here.",
+  "Watered this while you were out. Couldn't help it.",
+  "You were gone a bit. I kept it alive anyway.",
+  "Missed you enough to water this myself today."
+];
+let usedIndices = [];
+function nextMessage(){
+  if(usedIndices.length >= messages.length) usedIndices = [];
+  let idx;
+  do { idx = Math.floor(Math.random()*messages.length); } while(usedIndices.includes(idx));
+  usedIndices.push(idx);
+  return messages[idx];
+}
+
+function todayStr(d){
+  d = d || new Date();
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function daysBetween(a, b){
+  const da = new Date(a+'T00:00:00');
+  const db = new Date(b+'T00:00:00');
+  return Math.round((db - da) / 86400000);
+}
+function formatDate(iso){
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { month:'short', day:'numeric' }) + ' · ' +
+         d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+}
+function randomTimeOnDay(dateStr){
+  const hour = 8 + Math.floor(Math.random()*14);
+  const min = Math.floor(Math.random()*60);
+  const d = new Date(dateStr+'T00:00:00');
+  d.setHours(hour, min, 0, 0);
+  return d.toISOString();
+}
+
+let state = {
+  unlockedTypes: ['oak'],
+  garden: [],
+  currentPlant: {
+    type: 'oak',
+    totalWaters: 0,
+    firstWaterDate: null,
+    lastWateredDay: null,
+    history: []
+  }
+};
+
+async function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      state = JSON.parse(raw);
+    }
+  }catch(e){ /* first time, nothing saved yet */ }
+  applyCatchUp();
+  await saveState();
+  render();
+}
+
+async function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){ console.error('save failed', e); }
+}
+
+function applyCatchUp(){
+  const plant = state.currentPlant;
+  const today = todayStr();
+  if(!plant.lastWateredDay) return;
+  let gap = daysBetween(plant.lastWateredDay, today);
+  if(gap <= 1) return;
+  const missedDays = Math.min(gap - 1, 5);
+  let cursor = new Date(plant.lastWateredDay+'T00:00:00');
+  for(let i=0;i<missedDays;i++){
+    cursor.setDate(cursor.getDate()+1);
+    const dStr = todayStr(cursor);
+    if(dStr === today) break;
+    const iso = randomTimeOnDay(dStr);
+    plant.totalWaters += 1;
+    plant.history.push({ date: iso, who: 'him', message: nextMessage(), note: null });
+    plant.lastWateredDay = dStr;
+  }
+}
+
+function getStage(n){
+  if(n === 0) return 0;
+  if(n <= 2) return 1;
+  if(n <= 6) return 2;
+  if(n <= 14) return 3;
+  if(n <= FULL_GROWTH_WATERS-1) return 4;
+  return 5;
+}
+const stageNames = [
+  "a seed, waiting",
+  "a sprout, just barely",
+  "holding on, growing",
+  "reaching upward",
+  "standing steady",
+  "fully grown — ready for the garden"
+];
+
+function seededRandom(seed){
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return function(){ s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+}
+
+function drawTreeKind(g, cfg, stage, totalWaters){
+  const rand = seededRandom(1000 + totalWaters * 7);
+  const maxDepth = [0,2,4,6,8,10][stage];
+  const trunkLen = [0,26,42,58,72,86][stage];
+  const trunkWidth = [0,4,6,9,12,15][stage];
+
+  function branch(x, y, angle, len, width, depth){
+    const rad = angle * Math.PI/180;
+    const x2 = x + Math.sin(rad) * len;
+    const y2 = y - Math.cos(rad) * len;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', x); line.setAttribute('y1', y);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke-width', Math.max(width, 1.2));
+    line.setAttribute('stroke', cfg.barkColor);
+    line.setAttribute('stroke-linecap', 'round');
+    g.appendChild(line);
+
+    if(depth <= 0){
+      const leafCount = stage >= 3 ? 3 : 1;
+      for(let i=0;i<leafCount;i++){
+        const lr = rand();
+        const leaf = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        leaf.setAttribute('cx', x2 + (rand()-0.5)*10);
+        leaf.setAttribute('cy', y2 + (rand()-0.5)*10 - 3);
+        leaf.setAttribute('r', 3 + rand()*2.5);
+        leaf.setAttribute('fill', lr < cfg.accentRatio ? cfg.accentColor : cfg.leafColor);
+        g.appendChild(leaf);
+      }
+      return;
+    }
+    const branches = depth === maxDepth ? 2 : (rand() > 0.6 ? 3 : 2);
+    const spread = 22 + rand()*14;
+    for(let i=0;i<branches;i++){
+      const off = (i - (branches-1)/2) * spread + (rand()-0.5)*8;
+      branch(x2, y2, angle + off, len * (0.72 + rand()*0.1), width*0.72, depth-1);
+    }
+  }
+  branch(150, 290, 0, trunkLen, trunkWidth, maxDepth);
+}
+
+function drawStemKind(g, cfg, stage, totalWaters){
+  const rand = seededRandom(2000 + totalWaters * 11);
+  const heights = [0,24,55,90,125,155];
+  const h = heights[stage];
+  const stemTop = 290 - h;
+
+  const stem = document.createElementNS('http://www.w3.org/2000/svg','path');
+  const wobble = 8 * (stage/5);
+  stem.setAttribute('d', `M150,290 Q${150+wobble},${290-h*0.5} 150,${stemTop}`);
+  stem.setAttribute('stroke', cfg.stemColor);
+  stem.setAttribute('stroke-width', 4);
+  stem.setAttribute('fill','none');
+  stem.setAttribute('stroke-linecap','round');
+  g.appendChild(stem);
+
+  if(stage >= 2){
+    for(let i=0;i<2;i++){
+      const ly = stemTop + h*0.35 + i*h*0.25;
+      const leaf = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+      const side = i % 2 === 0 ? -1 : 1;
+      leaf.setAttribute('cx', 150 + side*12);
+      leaf.setAttribute('cy', ly);
+      leaf.setAttribute('rx', 10); leaf.setAttribute('ry', 5);
+      leaf.setAttribute('fill', cfg.stemColor);
+      leaf.setAttribute('transform', `rotate(${side*30} ${150+side*12} ${ly})`);
+      g.appendChild(leaf);
+    }
+  }
+
+  if(stage >= 3){
+    const petalCount = cfg.centerColor ? 12 : 8;
+    const petalR = stage >= 4 ? 13 : 8;
+    for(let i=0;i<petalCount;i++){
+      const ang = (i / petalCount) * Math.PI * 2;
+      const px = 150 + Math.cos(ang) * petalR;
+      const py = stemTop + Math.sin(ang) * petalR;
+      const petal = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+      petal.setAttribute('cx', px); petal.setAttribute('cy', py);
+      petal.setAttribute('rx', petalR*0.55); petal.setAttribute('ry', petalR*0.9);
+      petal.setAttribute('fill', i % 3 === 0 && cfg.petalColor2 ? cfg.petalColor2 : cfg.petalColor);
+      petal.setAttribute('transform', `rotate(${ang*180/Math.PI} ${px} ${py})`);
+      g.appendChild(petal);
+    }
+    const center = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    center.setAttribute('cx', 150); center.setAttribute('cy', stemTop);
+    center.setAttribute('r', cfg.centerColor ? petalR*0.6 : petalR*0.35);
+    center.setAttribute('fill', cfg.centerColor || cfg.petalColor2 || cfg.petalColor);
+    g.appendChild(center);
+  }
+}
+
+function drawPlant(type, stage, totalWaters){
+  const g = document.getElementById('tree-group');
+  g.innerHTML = '';
+  g.classList.remove('sway');
+  const cfg = plantTypes[type];
+
+  if(stage === 0){
+    const seed = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    seed.setAttribute('cx','150'); seed.setAttribute('cy','282');
+    seed.setAttribute('rx','7'); seed.setAttribute('ry','5');
+    seed.setAttribute('fill', '#7a5a3a');
+    g.appendChild(seed);
+    return;
+  }
+  if(cfg.kind === 'tree'){
+    drawTreeKind(g, cfg, stage, totalWaters);
+    if(stage >= 2) g.classList.add('sway');
+  } else {
+    drawStemKind(g, cfg, stage, totalWaters);
+    if(stage >= 2) g.classList.add('sway');
+  }
+}
+
+function spawnFireflies(stage){
+  const container = document.getElementById('fireflies');
+  container.innerHTML = '';
+  if(stage < 3) return;
+  const count = stage >= 5 ? 6 : 3;
+  for(let i=0;i<count;i++){
+    const f = document.createElement('div');
+    f.className = 'firefly';
+    f.style.left = (30 + Math.random()*60) + '%';
+    f.style.top = (30 + Math.random()*40) + '%';
+    f.style.animationDelay = (Math.random()*6) + 's';
+    container.appendChild(f);
+  }
+}
+
+function daysGrowing(plant){
+  if(!plant.firstWaterDate) return 0;
+  const first = new Date(plant.firstWaterDate);
+  const now = new Date();
+  return Math.max(0, Math.floor((now - first) / 86400000));
+}
+
+function renderHistory(){
+  const list = document.getElementById('historyList');
+  const hist = state.currentPlant.history;
+  if(hist.length === 0){
+    list.innerHTML = '<div class="empty-state">nothing yet. water it, and this fills up.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  const sorted = [...hist].reverse();
+  for(const entry of sorted){
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <div class="entry-mark ${entry.who === 'her' ? 'her' : ''}"></div>
+      <div class="entry-body">
+        <div class="entry-date">${formatDate(entry.date)} · ${entry.who === 'her' ? 'you watered' : 'while you were away'}</div>
+        <div class="entry-msg">${entry.message}</div>
+        ${entry.note ? `<div class="entry-note">"${entry.note}"</div>` : ''}
+      </div>
+    `;
+    list.appendChild(div);
+  }
+}
+
+function render(){
+  const plant = state.currentPlant;
+  const cfg = plantTypes[plant.type];
+  const stage = getStage(plant.totalWaters);
+  const today = todayStr();
+
+  document.getElementById('plantTitle').textContent = 'Our ' + cfg.name;
+  document.getElementById('plantSub').textContent = cfg.sub;
+  document.getElementById('stageName').textContent = stageNames[stage];
+  document.getElementById('waterCount').textContent = plant.totalWaters;
+  document.getElementById('dayCount').textContent = daysGrowing(plant);
+  drawPlant(plant.type, stage, plant.totalWaters);
+  spawnFireflies(stage);
+  renderHistory();
+
+  const btn = document.getElementById('waterBtn');
+  const hint = document.getElementById('waterHint');
+  const noteInput = document.getElementById('noteInput');
+
+  if(stage >= 5){
+    btn.textContent = 'let it rest in the garden';
+    btn.classList.add('retire-btn');
+    btn.disabled = false;
+    noteInput.disabled = true;
+    hint.textContent = "it's fully grown. ready whenever you are.";
+  } else {
+    btn.textContent = 'water it';
+    btn.classList.remove('retire-btn');
+    noteInput.disabled = false;
+    if(plant.lastWateredDay === today){
+      btn.disabled = true;
+      hint.textContent = "already watered today — come back tomorrow";
+    } else {
+      btn.disabled = false;
+      hint.textContent = "once a day. if you miss one, I'll cover it.";
+    }
+  }
+}
+
+document.getElementById('waterBtn').addEventListener('click', async () => {
+  const plant = state.currentPlant;
+  const stage = getStage(plant.totalWaters);
+
+  if(stage >= 5){
+    // retire to garden
+    state.garden.push({
+      type: plant.type,
+      completedDate: new Date().toISOString(),
+      history: plant.history
+    });
+    if(state.unlockedTypes.length < Object.keys(plantTypes).length){
+      state.unlockedTypes = Object.keys(plantTypes);
+    }
+    await saveState();
+    openSeedPicker();
+    return;
+  }
+
+  const btn = document.getElementById('waterBtn');
+  btn.disabled = true;
+
+  const now = new Date().toISOString();
+  const today = todayStr();
+  if(!plant.firstWaterDate) plant.firstWaterDate = now;
+  plant.totalWaters += 1;
+  plant.lastWateredDay = today;
+
+  const noteInput = document.getElementById('noteInput');
+  const note = noteInput.value.trim();
+  const msg = nextMessage();
+  plant.history.push({ date: now, who: 'her', message: msg, note: note || null });
+
+  await saveState();
+  render();
+
+  const card = document.getElementById('messageCard');
+  document.getElementById('messageText').textContent = msg;
+  card.classList.remove('show');
+  void card.offsetWidth;
+  card.classList.add('show');
+  noteInput.value = '';
+});
+
+// Garden overlay - full scene render
+function buildGardenScene(){
+  const wrap = document.getElementById('gardenSceneWrap');
+  if(state.garden.length === 0){
+    wrap.innerHTML = '<div class="garden-empty">nothing here yet — the first one is still growing</div>';
+    return;
+  }
+
+  const W = 400, H = 240;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS,'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('preserveAspectRatio','xMidYMax meet');
+
+  // house, far in the background
+  const house = document.createElementNS(svgNS,'g');
+  house.setAttribute('opacity','0.35');
+  house.innerHTML = `
+    <rect x="300" y="70" width="46" height="34" fill="#241a30"></rect>
+    <polygon points="296,70 350,70 323,48" fill="#241a30"></polygon>
+    <rect x="316" y="86" width="10" height="18" fill="#4a3550"></rect>
+    <rect x="332" y="80" width="8" height="8" fill="#c9a15a" opacity="0.6"></rect>
+  `;
+  svg.appendChild(house);
+
+  // ground
+  const ground = document.createElementNS(svgNS,'path');
+  ground.setAttribute('d', `M0,${H-40} Q${W/2},${H-52} ${W},${H-40} L${W},${H} L0,${H} Z`);
+  ground.setAttribute('fill', '#1c1410');
+  svg.appendChild(ground);
+
+  // wooden sign, centered
+  const sign = document.createElementNS(svgNS,'g');
+  sign.innerHTML = `
+    <line x1="${W/2}" y1="16" x2="${W/2}" y2="46" stroke="#4a3020" stroke-width="5"></line>
+    <rect x="${W/2-64}" y="12" width="128" height="30" rx="4" fill="#6b4a30" stroke="#4a3020" stroke-width="2"></rect>
+    <circle cx="${W/2-56}" cy="19" r="1.6" fill="#2a1c10"></circle>
+    <circle cx="${W/2+56}" cy="19" r="1.6" fill="#2a1c10"></circle>
+    <circle cx="${W/2-56}" cy="35" r="1.6" fill="#2a1c10"></circle>
+    <circle cx="${W/2+56}" cy="35" r="1.6" fill="#2a1c10"></circle>
+    <text x="${W/2}" y="32" text-anchor="middle" font-family="Fraunces, serif" font-size="13" font-style="italic" fill="#f0e6cf">Tracy &amp; Hubby's</text>
+  `;
+  svg.appendChild(sign);
+
+  // fence along the front
+  const fence = document.createElementNS(svgNS,'g');
+  fence.setAttribute('opacity','0.9');
+  let fenceHTML = `<line x1="0" y1="${H-46}" x2="${W}" y2="${H-46}" stroke="#3a2a1f" stroke-width="3"></line>`;
+  for(let x=6; x<W; x+=22){
+    fenceHTML += `<rect x="${x}" y="${H-58}" width="5" height="24" fill="#4a3527"></rect>`;
+  }
+  fence.innerHTML = fenceHTML;
+  svg.appendChild(fence);
+
+  // plants, spaced along the ground behind the fence
+  const n = state.garden.length;
+  const spacing = W / (n + 1);
+  state.garden.forEach((entry, i) => {
+    const cx = spacing * (i + 1);
+    const cy = H - 58;
+    const scale = 0.34;
+    const g = document.createElementNS(svgNS,'g');
+    g.setAttribute('transform', `translate(${cx - 150*scale}, ${cy - 290*scale}) scale(${scale})`);
+    g.style.cursor = 'pointer';
+    g.dataset.index = i;
+    const cfg = plantTypes[entry.type];
+    const seed = 5000 + i * 13;
+    if(cfg.kind === 'tree') drawTreeKind(g, cfg, 5, seed);
+    else drawStemKind(g, cfg, 5, seed);
+    g.addEventListener('click', () => openPlantDetail(i));
+    svg.appendChild(g);
+  });
+
+  wrap.innerHTML = '';
+  wrap.appendChild(svg);
+}
+
+function openPlantDetail(i){
+  const entry = state.garden[i];
+  const cfg = plantTypes[entry.type];
+  document.getElementById('detailTitle').textContent = 'Our ' + cfg.name;
+  document.getElementById('detailSub').textContent = 'grown ' + new Date(entry.completedDate).toLocaleDateString(undefined,{month:'long', day:'numeric', year:'numeric'});
+  const list = document.getElementById('plantDetailList');
+  list.innerHTML = '';
+  const sorted = [...entry.history].reverse();
+  for(const h of sorted){
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <div class="entry-mark ${h.who === 'her' ? 'her' : ''}"></div>
+      <div class="entry-body">
+        <div class="entry-date">${formatDate(h.date)} · ${h.who === 'her' ? 'you watered' : 'while you were away'}</div>
+        <div class="entry-msg">${h.message}</div>
+        ${h.note ? `<div class="entry-note">"${h.note}"</div>` : ''}
+      </div>
+    `;
+    list.appendChild(div);
+  }
+  document.getElementById('gardenOverlay').classList.remove('show');
+  document.getElementById('plantDetailOverlay').classList.add('show');
+}
+
+document.getElementById('closeDetail').addEventListener('click', () => {
+  document.getElementById('plantDetailOverlay').classList.remove('show');
+  document.getElementById('gardenOverlay').classList.add('show');
+});
+
+document.getElementById('gardenBtn').addEventListener('click', () => {
+  buildGardenScene();
+  document.getElementById('gardenOverlay').classList.add('show');
+});
+document.getElementById('closeGarden').addEventListener('click', () => {
+  document.getElementById('gardenOverlay').classList.remove('show');
+});
+
+// A message, anytime, no watering needed
+document.getElementById('msgBtn').addEventListener('click', () => {
+  const msg = nextMessage();
+  const card = document.getElementById('messageCard');
+  document.getElementById('messageText').textContent = msg;
+  card.classList.remove('show');
+  void card.offsetWidth;
+  card.classList.add('show');
+});
+
+function openSeedPicker(){
+  const grid = document.getElementById('seedGrid');
+  grid.innerHTML = '';
+  for(const key of Object.keys(plantTypes)){
+    const cfg = plantTypes[key];
+    const unlocked = state.unlockedTypes.includes(key);
+    const card = document.createElement('div');
+    card.className = 'seed-card' + (unlocked ? '' : ' locked');
+    card.innerHTML = `<span class="emoji">${cfg.emoji}</span><div class="sname">${cfg.name}</div><div class="slock">${unlocked ? '' : 'locked'}</div>`;
+    if(unlocked){
+      card.addEventListener('click', async () => {
+        state.currentPlant = { type: key, totalWaters: 0, firstWaterDate: null, lastWateredDay: null, history: [] };
+        await saveState();
+        document.getElementById('seedOverlay').classList.remove('show');
+        render();
+      });
+    }
+    grid.appendChild(card);
+  }
+  document.getElementById('seedOverlay').classList.add('show');
+}
+
+loadState();
+</script>
+
+</body>
+</html>
